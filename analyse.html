@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Configure Analysis - Resume Analyzer</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .form-card {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            border: none;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .form-control, .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 12px 15px;
+            transition: all 0.3s ease;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        .file-badge {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border-radius: 20px;
+            padding: 8px 15px;
+            margin: 5px;
+            display: inline-block;
+        }
+        .choice-card {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .choice-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+        }
+        .choice-card.selected {
+            border-color: #667eea;
+            background: rgba(102, 126, 234, 0.05);
+        }
+        .choice-card input[type="radio"] {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="main-container p-5">
+                    <!-- Header -->
+                    <div class="text-center mb-5">
+                        <h1 class="display-5 fw-bold text-primary mb-3">
+                            <i class="fas fa-cog me-3"></i>
+                            Configure Analysis
+                        </h1>
+                        <p class="lead text-muted">Set your filtering criteria and analyze the uploaded resumes</p>
+                    </div>
+
+                    <!-- Uploaded Files -->
+                    <div class="form-card p-4 mb-4">
+                        <h5 class="mb-3">
+                            <i class="fas fa-file-upload text-primary me-2"></i>
+                            Uploaded Files ({{ files|length }})
+                        </h5>
+                        <div class="mb-3">
+                            {% for file in files %}
+                                <span class="file-badge">
+                                    <i class="fas fa-file me-2"></i>
+                                    {{ file }}
+                                </span>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Analysis Form -->
+                    <form action="{{ url_for('analyze') }}" method="post" id="analysisForm">
+                        <input type="hidden" name="session_folder" value="{{ session_folder }}">
+                        
+                        <!-- Filtering Choice -->
+                        <div class="form-card p-4 mb-4">
+                            <h5 class="mb-3">
+                                <i class="fas fa-filter text-primary me-2"></i>
+                                Select Filtering Criteria
+                            </h5>
+                            
+                            <div class="choice-card" onclick="selectChoice('1')">
+                                <input type="radio" name="choice" value="1" id="choice1">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">Skills Only</h6>
+                                        <p class="mb-0 text-muted">Filter resumes based on required skills only</p>
+                                    </div>
+                                    <i class="fas fa-code text-primary"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="choice-card" onclick="selectChoice('2')">
+                                <input type="radio" name="choice" value="2" id="choice2">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">Experience Only</h6>
+                                        <p class="mb-0 text-muted">Filter resumes based on minimum experience only</p>
+                                    </div>
+                                    <i class="fas fa-clock text-primary"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="choice-card" onclick="selectChoice('3')">
+                                <input type="radio" name="choice" value="3" id="choice3">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">Qualification Only</h6>
+                                        <p class="mb-0 text-muted">Filter resumes based on education level only</p>
+                                    </div>
+                                    <i class="fas fa-graduation-cap text-primary"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="choice-card" onclick="selectChoice('4')">
+                                <input type="radio" name="choice" value="4" id="choice4">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">All Criteria (AND Logic)</h6>
+                                        <p class="mb-0 text-muted">All requirements must be met</p>
+                                    </div>
+                                    <i class="fas fa-check-circle text-primary"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="choice-card" onclick="selectChoice('5')">
+                                <input type="radio" name="choice" value="5" id="choice5">
+                                <div class="d-flex align-items-center">
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">No Filtering</h6>
+                                        <p class="mb-0 text-muted">Accept all resumes without filtering</p>
+                                    </div>
+                                    <i class="fas fa-list text-primary"></i>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Criteria Inputs -->
+                        <div class="form-card p-4 mb-4">
+                            <h5 class="mb-3">
+                                <i class="fas fa-edit text-primary me-2"></i>
+                                Filtering Parameters
+                            </h5>
+                            
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="skills" class="form-label">
+                                            <i class="fas fa-code me-2"></i>
+                                            Required Skills
+                                        </label>
+                                        <input type="text" class="form-control" id="skills" name="skills" 
+                                               placeholder="e.g., python, java, machine learning">
+                                        <small class="text-muted">Separate multiple skills with commas</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="experience" class="form-label">
+                                            <i class="fas fa-clock me-2"></i>
+                                            Minimum Experience (years)
+                                        </label>
+                                        <input type="number" class="form-control" id="experience" name="experience" 
+                                               min="0" step="0.1" placeholder="e.g., 2.5">
+                                        <small class="text-muted">Enter minimum years of experience</small>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label for="qualifications" class="form-label">
+                                            <i class="fas fa-graduation-cap me-2"></i>
+                                            Required Qualifications
+                                        </label>
+                                        <input type="text" class="form-control" id="qualifications" name="qualifications" 
+                                               placeholder="e.g., btech, mtech, phd">
+                                        <small class="text-muted">Separate multiple qualifications with commas</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="text-center">
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary btn-lg me-3">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Back to Upload
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search me-2"></i>
+                                Analyze Resumes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function selectChoice(value) {
+            // Remove selected class from all cards
+            document.querySelectorAll('.choice-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked card
+            event.currentTarget.classList.add('selected');
+            
+            // Check the radio button
+            document.getElementById('choice' + value).checked = true;
+            
+            // Show/hide relevant input fields based on choice
+            updateInputVisibility(value);
+        }
+        
+        function updateInputVisibility(choice) {
+            const skillsInput = document.getElementById('skills').parentElement.parentElement;
+            const experienceInput = document.getElementById('experience').parentElement.parentElement;
+            const qualificationsInput = document.getElementById('qualifications').parentElement.parentElement;
+            
+            // Reset all to visible
+            skillsInput.style.display = 'block';
+            experienceInput.style.display = 'block';
+            qualificationsInput.style.display = 'block';
+            
+            // Hide irrelevant inputs based on choice
+            if (choice === '1') { // Skills only
+                experienceInput.style.display = 'none';
+                qualificationsInput.style.display = 'none';
+            } else if (choice === '2') { // Experience only
+                skillsInput.style.display = 'none';
+                qualificationsInput.style.display = 'none';
+            } else if (choice === '3') { // Qualification only
+                skillsInput.style.display = 'none';
+                experienceInput.style.display = 'none';
+            } else if (choice === '5') { // No filtering
+                skillsInput.style.display = 'none';
+                experienceInput.style.display = 'none';
+                qualificationsInput.style.display = 'none';
+            }
+            // Choice 4 (All criteria) shows all inputs
+        }
+        
+        // Form validation
+        document.getElementById('analysisForm').addEventListener('submit', function(e) {
+            const selectedChoice = document.querySelector('input[name="choice"]:checked');
+            if (!selectedChoice) {
+                e.preventDefault();
+                alert('Please select a filtering criteria.');
+                return;
+            }
+            
+            // Show loading state
+            const submitBtn = e.target.querySelector('button[type="submit"]');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Analyzing...';
+            submitBtn.disabled = true;
+        });
+    </script>
+</body>
+</html> 

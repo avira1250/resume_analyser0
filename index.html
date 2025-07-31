@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Analyzer - Smart Filtering System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .main-container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(10px);
+        }
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            background: rgba(102, 126, 234, 0.05);
+            transition: all 0.3s ease;
+        }
+        .upload-area:hover {
+            border-color: #764ba2;
+            background: rgba(118, 75, 162, 0.05);
+            transform: translateY(-2px);
+        }
+        .upload-area.dragover {
+            border-color: #764ba2;
+            background: rgba(118, 75, 162, 0.1);
+            transform: scale(1.02);
+        }
+        .feature-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 10px 0;
+            transition: transform 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .file-input {
+            display: none;
+        }
+        .file-label {
+            cursor: pointer;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 25px;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+        .file-label:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        .alert {
+            border-radius: 15px;
+            border: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="main-container p-5">
+                    <!-- Header -->
+                    <div class="text-center mb-5">
+                        <h1 class="display-4 fw-bold text-primary mb-3">
+                            <i class="fas fa-file-alt me-3"></i>
+                            Resume Analyzer
+                        </h1>
+                        <p class="lead text-muted">Smart Filtering System for Resume Analysis</p>
+                    </div>
+
+                    <!-- Flash Messages -->
+                    {% with messages = get_flashed_messages() %}
+                        {% if messages %}
+                            {% for message in messages %}
+                                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    {{ message }}
+                                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                                </div>
+                            {% endfor %}
+                        {% endif %}
+                    {% endwith %}
+
+                    <!-- Features -->
+                    <div class="row mb-5">
+                        <div class="col-md-4">
+                            <div class="feature-card text-center">
+                                <i class="fas fa-brain fa-3x mb-3"></i>
+                                <h5>Smart Analysis</h5>
+                                <p class="mb-0">AI-powered resume parsing and analysis</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature-card text-center">
+                                <i class="fas fa-filter fa-3x mb-3"></i>
+                                <h5>Flexible Filtering</h5>
+                                <p class="mb-0">Filter by skills, experience, or qualifications</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature-card text-center">
+                                <i class="fas fa-chart-bar fa-3x mb-3"></i>
+                                <h5>Detailed Reports</h5>
+                                <p class="mb-0">Generate comprehensive analysis reports</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Upload Section -->
+                    <div class="upload-area p-5 text-center mb-4">
+                        <i class="fas fa-cloud-upload-alt fa-4x text-primary mb-3"></i>
+                        <h3 class="mb-3">Upload Resumes</h3>
+                        <p class="text-muted mb-4">Support for PDF and DOCX files</p>
+                        
+                        <form action="{{ url_for('upload_files') }}" method="post" enctype="multipart/form-data" id="uploadForm">
+                            <input type="file" name="files" multiple accept=".pdf,.docx" class="file-input" id="fileInput">
+                            <label for="fileInput" class="file-label">
+                                <i class="fas fa-upload me-2"></i>
+                                Choose Files
+                            </label>
+                            <div id="fileList" class="mt-3"></div>
+                            <button type="submit" class="btn btn-primary btn-lg mt-3" id="uploadBtn" style="display: none;">
+                                <i class="fas fa-upload me-2"></i>
+                                Upload and Analyze
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Instructions -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-info-circle text-primary me-2"></i>
+                                        How it Works
+                                    </h5>
+                                    <ol class="mb-0">
+                                        <li>Upload your resume files (PDF/DOCX)</li>
+                                        <li>Choose your filtering criteria</li>
+                                        <li>Get detailed analysis results</li>
+                                        <li>Download comprehensive reports</li>
+                                    </ol>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-0 shadow-sm">
+                                <div class="card-body">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-cog text-primary me-2"></i>
+                                        Filtering Options
+                                    </h5>
+                                    <ul class="mb-0">
+                                        <li><strong>Skills Only:</strong> Filter by required skills</li>
+                                        <li><strong>Experience Only:</strong> Filter by minimum experience</li>
+                                        <li><strong>Qualification Only:</strong> Filter by education level</li>
+                                        <li><strong>All Criteria:</strong> All requirements must match</li>
+                                        <li><strong>No Filtering:</strong> Accept all resumes</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const fileList = document.getElementById('fileList');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const uploadArea = document.querySelector('.upload-area');
+
+        fileInput.addEventListener('change', function() {
+            const files = Array.from(this.files);
+            if (files.length > 0) {
+                fileList.innerHTML = '<h6 class="text-primary">Selected Files:</h6>';
+                files.forEach(file => {
+                    fileList.innerHTML += `
+                        <div class="alert alert-light">
+                            <i class="fas fa-file me-2"></i>
+                            ${file.name} (${(file.size / 1024 / 1024).toFixed(2)} MB)
+                        </div>
+                    `;
+                });
+                uploadBtn.style.display = 'inline-block';
+            } else {
+                fileList.innerHTML = '';
+                uploadBtn.style.display = 'none';
+            }
+        });
+
+        // Drag and drop functionality
+        uploadArea.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            this.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', function(e) {
+            e.preventDefault();
+            this.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            fileInput.files = files;
+            fileInput.dispatchEvent(new Event('change'));
+        });
+    </script>
+</body>
+</html>
